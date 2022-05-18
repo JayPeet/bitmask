@@ -1,5 +1,6 @@
 # Bitmask
 [![Hex.pm](https://img.shields.io/hexpm/v/bitmask.svg)](https://hex.pm/packages/bitmask)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightblue.svg)](https://hexdocs.pm/bitmask/)
 
 A bitmask implementation for elixir, with optional Ecto support.
 
