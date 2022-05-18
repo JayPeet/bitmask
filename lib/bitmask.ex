@@ -101,8 +101,10 @@ defmodule Bitmask do
       def has_flag(bitmask, flag) when is_integer(bitmask) and is_atom(flag) do
         Bitwise.band(bitmask, atom_to_bitmask(flag)) > 0
       end
+    end
 
-      if Code.ensure_loaded?(Ecto.Type) do
+    if Code.ensure_loaded?(Ecto.Type) do
+      quote do
         use Ecto.Type
         def type, do: :bigint
 
@@ -133,7 +135,7 @@ defmodule Bitmask do
         end
 
         def dump(_), do: :error
-        end
+      end
     end
   end
 
