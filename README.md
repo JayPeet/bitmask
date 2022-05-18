@@ -23,5 +23,21 @@ iex> bitmask = MyBitmask.atom_flags_to_bitmask([:flag_1, :flag_3])
 %MyBitmask{bitmask: 5, flags: [:flag_1, :flag_3]}
 ```
 
+### Check if we have a flag
+```elixir
+iex> MyBitmask.has_flag(bitmask, :flag_1])
+true
+```
+
+### Store it in an Ecto schema
+```elixir
+defmodule SomeEctoSchema do
+  use Ecto.Schema
+  schema "bitmasks" do
+    field :my_bitmask, MyBitmask
+  end
+end
+```
+
 See the docs for more info.
 Issues / PRs / Feedback welcome.
