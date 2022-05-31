@@ -4,7 +4,7 @@ defmodule Bitmask.MixProject do
   def project do
     [
       app: :bitmask,
-      version: "0.1.2",
+      version: "0.2.0",
       elixir: "~> 1.10",
       deps: deps(),
 

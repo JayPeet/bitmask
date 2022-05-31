@@ -40,7 +40,7 @@ defmodule Bitmask do
     {atom, Bitwise.<<<(1, i)}
   end
 
-  defmacro __using__ (bit_vals) do
+  defmacro __using__(bit_vals) do
     bit_vals =
       Enum.with_index(bit_vals)
       |> Enum.map(&validate_bit_vals/1)
@@ -55,15 +55,54 @@ defmodule Bitmask do
         end]
       end)
 
+      ecto_code =
+        if Code.ensure_loaded?(Ecto.Type) do
+          quote do
+            use Ecto.Type
+            def type, do: :bigint
+
+            def cast(bitmask) when is_integer(bitmask) do
+              {:ok, int_to_bitmask(bitmask)}
+            end
+
+            def cast(%__MODULE__{} = card_type) do
+              {:ok, card_type}
+            end
+
+            def cast(_), do: :error
+
+            def load(bitmask) when is_integer(bitmask) do
+              {:ok, int_to_bitmask(bitmask)}
+            end
+
+            def load(_) do
+              :error
+            end
+
+            def dump(%__MODULE__{bitmask: bitmask, flags: _atom_flags}) do
+              {:ok, bitmask}
+            end
+
+            def dump(bitmask) when is_integer(bitmask) do
+              {:ok, bitmask}
+            end
+
+            def dump(_), do: :error
+          end
+        else
+          nil
+        end
+
+    ast =
     quote do
       @behaviour Bitmask
+
+      defstruct bitmask: 0, flags: []
 
       @type t() :: %__MODULE__{
         bitmask: integer(),
         flags: list(:atom)
       }
-
-      defstruct bitmask: 0, flags: []
 
       Module.put_attribute(__MODULE__, :bit_values, unquote(bit_vals))
 
@@ -72,6 +111,7 @@ defmodule Bitmask do
       end
 
       unquote(atom_to_bitmask)
+
       def atom_to_bitmask(_) do
         0
       end
@@ -101,42 +141,14 @@ defmodule Bitmask do
       def has_flag(bitmask, flag) when is_integer(bitmask) and is_atom(flag) do
         Bitwise.band(bitmask, atom_to_bitmask(flag)) > 0
       end
+
+      unquote(ecto_code)
     end
 
-    if Code.ensure_loaded?(Ecto.Type) do
-      quote do
-        use Ecto.Type
-        def type, do: :bigint
+    #Macro.to_string(ast)
+    #|> IO.puts
 
-        def cast(bitmask) when is_integer(bitmask) do
-          {:ok, int_to_bitmask(bitmask)}
-        end
-
-        def cast(%__MODULE__{} = card_type) do
-          {:ok, card_type}
-        end
-
-        def cast(_), do: :error
-
-        def load(bitmask) when is_integer(bitmask) do
-          {:ok, int_to_bitmask(bitmask)}
-        end
-
-        def load(_) do
-          :error
-        end
-
-        def dump(%__MODULE__{bitmask: bitmask, flags: _atom_flags}) do
-          {:ok, bitmask}
-        end
-
-        def dump(bitmask) when is_integer(bitmask) do
-          {:ok, bitmask}
-        end
-
-        def dump(_), do: :error
-      end
-    end
+    ast
   end
 
   @doc """
