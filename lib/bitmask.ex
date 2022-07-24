@@ -55,43 +55,49 @@ defmodule Bitmask do
         end]
       end)
 
-      ecto_code =
-        if Code.ensure_loaded?(Ecto.Type) do
-          quote do
-            use Ecto.Type
-            def type, do: :bigint
 
-            def cast(bitmask) when is_integer(bitmask) do
-              {:ok, int_to_bitmask(bitmask)}
-            end
+    all_bitmask =
+    Enum.reduce(bit_vals, %{bitmask: 0, flags: []}, fn({atom, value}, %{bitmask: bitmask, flags: flags}) ->
+      %{bitmask: bitmask + value, flags: flags ++ [atom]}
+    end)
 
-            def cast(%__MODULE__{} = card_type) do
-              {:ok, card_type}
-            end
+    ecto_code =
+      if Code.ensure_loaded?(Ecto.Type) do
+        quote do
+          use Ecto.Type
+          def type, do: :bigint
 
-            def cast(_), do: :error
-
-            def load(bitmask) when is_integer(bitmask) do
-              {:ok, int_to_bitmask(bitmask)}
-            end
-
-            def load(_) do
-              :error
-            end
-
-            def dump(%__MODULE__{bitmask: bitmask, flags: _atom_flags}) do
-              {:ok, bitmask}
-            end
-
-            def dump(bitmask) when is_integer(bitmask) do
-              {:ok, bitmask}
-            end
-
-            def dump(_), do: :error
+          def cast(bitmask) when is_integer(bitmask) do
+            {:ok, int_to_bitmask(bitmask)}
           end
-        else
-          nil
+
+          def cast(%__MODULE__{} = card_type) do
+            {:ok, card_type}
+          end
+
+          def cast(_), do: :error
+
+          def load(bitmask) when is_integer(bitmask) do
+            {:ok, int_to_bitmask(bitmask)}
+          end
+
+          def load(_) do
+            :error
+          end
+
+          def dump(%__MODULE__{bitmask: bitmask, flags: _atom_flags}) do
+            {:ok, bitmask}
+          end
+
+          def dump(bitmask) when is_integer(bitmask) do
+            {:ok, bitmask}
+          end
+
+          def dump(_), do: :error
         end
+      else
+        nil
+      end
 
     ast =
     quote do
@@ -105,6 +111,14 @@ defmodule Bitmask do
       }
 
       Module.put_attribute(__MODULE__, :bit_values, unquote(bit_vals))
+
+      def none() do
+        %__MODULE__{bitmask: 0, flags: []}
+      end
+
+      def all() do
+        %__MODULE__{bitmask: unquote(all_bitmask.bitmask), flags: unquote(all_bitmask.flags)}
+      end
 
       def get_all_values() do
         @bit_values
@@ -150,6 +164,25 @@ defmodule Bitmask do
 
     ast
   end
+
+  @doc """
+    Returns the bitmask with no flags set
+      iex> MyBitmask.none()
+      %MyBitmask{bitmask: 0, flags: []}
+
+  """
+  @doc since: "0.3.0"
+  @doc group: "Generated Functions"
+  @callback all() :: %{bitmask: integer(), flags: list(atom())}
+
+  @doc """
+    Returns the bitmask with all flags set
+      iex> MyBitmask.all()
+      %MyBitmask{bitmask: 15, flags: [:flag_1, :flag_2, :flag_3, :flag_4]}
+
+  """
+  @doc since: "0.3.0"
+  @callback none() :: %{bitmask: integer(), flags: list(atom())}
 
   @doc """
     Converts an atom from the bitmask into its underlying value
