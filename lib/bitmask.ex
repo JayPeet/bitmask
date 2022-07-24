@@ -172,8 +172,7 @@ defmodule Bitmask do
 
   """
   @doc since: "0.3.0"
-  @doc group: "Generated Functions"
-  @callback all() :: %{bitmask: integer(), flags: list(atom())}
+  @callback none() :: %{bitmask: integer(), flags: list(atom())}
 
   @doc """
     Returns the bitmask with all flags set
@@ -182,7 +181,7 @@ defmodule Bitmask do
 
   """
   @doc since: "0.3.0"
-  @callback none() :: %{bitmask: integer(), flags: list(atom())}
+  @callback all() :: %{bitmask: integer(), flags: list(atom())}
 
   @doc """
     Converts an atom from the bitmask into its underlying value
