@@ -58,7 +58,8 @@ defmodule Bitmask do
 
     all_bitmask =
     Enum.reduce(bit_vals, %{bitmask: 0, flags: []}, fn({atom, value}, %{bitmask: bitmask, flags: flags}) ->
-      %{bitmask: bitmask + value, flags: flags ++ [atom]}
+      {val, _} = Code.eval_quoted(value, [], __CALLER__)
+      %{bitmask: bitmask + val, flags: flags ++ [atom]}
     end)
 
     ecto_code =
