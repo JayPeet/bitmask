@@ -46,21 +46,23 @@ defmodule Bitmask do
       |> Enum.map(&validate_bit_vals/1)
 
     atom_to_bitmask =
-      Enum.reduce(bit_vals, [], fn({atom, value}, acc) ->
-        acc ++ [
-        quote do
-          def atom_to_bitmask(unquote(atom)) do
-            unquote(value)
-          end
-        end]
+      Enum.reduce(bit_vals, [], fn {atom, value}, acc ->
+        acc ++
+          [
+            quote do
+              def atom_to_bitmask(unquote(atom)) do
+                unquote(value)
+              end
+            end
+          ]
       end)
 
-
     all_bitmask =
-    Enum.reduce(bit_vals, %{bitmask: 0, flags: []}, fn({atom, value}, %{bitmask: bitmask, flags: flags}) ->
-      {val, _} = Code.eval_quoted(value, [], __CALLER__)
-      %{bitmask: bitmask + val, flags: flags ++ [atom]}
-    end)
+      Enum.reduce(bit_vals, %{bitmask: 0, flags: []}, fn {atom, value},
+                                                         %{bitmask: bitmask, flags: flags} ->
+        {val, _} = Code.eval_quoted(value, [], __CALLER__)
+        %{bitmask: bitmask + val, flags: flags ++ [atom]}
+      end)
 
     ecto_code =
       if Code.ensure_loaded?(Ecto.Type) do
@@ -101,67 +103,67 @@ defmodule Bitmask do
       end
 
     ast =
-    quote do
-      @behaviour Bitmask
+      quote do
+        @behaviour Bitmask
 
-      defstruct bitmask: 0, flags: []
+        defstruct bitmask: 0, flags: []
 
-      @type t() :: %__MODULE__{
-        bitmask: integer(),
-        flags: list(:atom)
-      }
+        @type t() :: %__MODULE__{
+                bitmask: integer(),
+                flags: list(:atom)
+              }
 
-      Module.put_attribute(__MODULE__, :bit_values, unquote(bit_vals))
+        Module.put_attribute(__MODULE__, :bit_values, unquote(bit_vals))
 
-      def none() do
-        %__MODULE__{bitmask: 0, flags: []}
+        def none() do
+          %__MODULE__{bitmask: 0, flags: []}
+        end
+
+        def all() do
+          %__MODULE__{bitmask: unquote(all_bitmask.bitmask), flags: unquote(all_bitmask.flags)}
+        end
+
+        def get_all_values() do
+          @bit_values
+        end
+
+        unquote(atom_to_bitmask)
+
+        def atom_to_bitmask(_) do
+          0
+        end
+
+        def int_to_bitmask(bitmask) when is_integer(bitmask) do
+          flags =
+            Enum.filter(@bit_values, fn {_keyword, val} -> Bitwise.band(val, bitmask) > 0 end)
+            |> Keyword.keys()
+
+          %__MODULE__{bitmask: bitmask, flags: flags}
+        end
+
+        def atom_flags_to_bitmask(atom_flags) when is_list(atom_flags) do
+          bitmask =
+            Keyword.take(@bit_values, atom_flags)
+            |> Enum.reduce(0, fn {_flag_name, value}, acc ->
+              acc + value
+            end)
+
+          %__MODULE__{bitmask: bitmask, flags: atom_flags}
+        end
+
+        def has_flag(%__MODULE__{bitmask: bitmask, flags: _}, flag) when is_atom(flag) do
+          Bitwise.band(bitmask, atom_to_bitmask(flag)) > 0
+        end
+
+        def has_flag(bitmask, flag) when is_integer(bitmask) and is_atom(flag) do
+          Bitwise.band(bitmask, atom_to_bitmask(flag)) > 0
+        end
+
+        unquote(ecto_code)
       end
 
-      def all() do
-        %__MODULE__{bitmask: unquote(all_bitmask.bitmask), flags: unquote(all_bitmask.flags)}
-      end
-
-      def get_all_values() do
-        @bit_values
-      end
-
-      unquote(atom_to_bitmask)
-
-      def atom_to_bitmask(_) do
-        0
-      end
-
-      def int_to_bitmask(bitmask) when is_integer(bitmask) do
-        flags =
-        Enum.filter(@bit_values, fn({_keyword, val}) -> Bitwise.band(val, bitmask) > 0 end)
-        |> Keyword.keys()
-
-        %__MODULE__{bitmask: bitmask, flags: flags}
-      end
-
-      def atom_flags_to_bitmask(atom_flags) when is_list(atom_flags) do
-        bitmask =
-        Keyword.take(@bit_values, atom_flags)
-        |> Enum.reduce(0, fn({_flag_name, value}, acc) ->
-          acc + value
-        end)
-
-        %__MODULE__{bitmask: bitmask, flags: atom_flags}
-      end
-
-      def has_flag(%__MODULE__{bitmask: bitmask, flags: _}, flag) when is_atom(flag) do
-        Bitwise.band(bitmask, atom_to_bitmask(flag)) > 0
-      end
-
-      def has_flag(bitmask, flag) when is_integer(bitmask) and is_atom(flag) do
-        Bitwise.band(bitmask, atom_to_bitmask(flag)) > 0
-      end
-
-      unquote(ecto_code)
-    end
-
-    #Macro.to_string(ast)
-    #|> IO.puts
+    # Macro.to_string(ast)
+    # |> IO.puts
 
     ast
   end
@@ -225,7 +227,7 @@ defmodule Bitmask do
   @doc since: "0.1.0"
   @callback has_flag(%{bitmask: integer(), flags: list(atom())} | integer(), atom()) :: boolean()
 
-  #Bitmask behaviour, for documentation
+  # Bitmask behaviour, for documentation
   @doc """
     Returns the a list of all the bitmasks flags
       iex> MyBitmask.get_all_values()
