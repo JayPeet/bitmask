@@ -4,8 +4,8 @@ defmodule Bitmask.MixProject do
   def project do
     [
       app: :bitmask,
-      version: "0.3.1",
-      elixir: "~> 1.10",
+      version: "0.4.0",
+      elixir: "~> 1.11",
       deps: deps(),
 
       # Docs
@@ -26,7 +26,7 @@ defmodule Bitmask.MixProject do
 
   defp deps do
     [
-      {:ex_doc, "~> 0.28.0", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.35.0", only: :dev, runtime: false},
       {:ecto, "~> 3.8", optional: true}
     ]
   end
