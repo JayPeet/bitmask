@@ -219,6 +219,8 @@ defmodule Bitmask do
       %Bitmask{bitmask: 3, flags: [:flag_1, :flag_2]}
       iex> MyBitmask.has_flag(bitmask, :flag_2)
       true
+      iex> MyBitmask.has_flag(3, :flag_2)
+      true
 
   """
   @doc since: "0.1.0"

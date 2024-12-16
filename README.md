@@ -22,7 +22,7 @@ end
 ### Create your bitmask
 ```elixir
 iex> bitmask = MyBitmask.atom_flags_to_bitmask([:flag_1, :flag_3])
-%MyBitmask{bitmask: 5, flags: [:flag_1, :flag_3]}
+%Bitmask{bitmask: 5, flags: [:flag_1, :flag_3]}
 ```
 
 ### Check if we have a flag
@@ -40,6 +40,12 @@ defmodule SomeEctoSchema do
   end
 end
 ```
+
+### Performance tests can be ran with
+```bat
+mix test --include benchmark
+```
+
 
 See the docs for more info.
 Issues / PRs / Feedback welcome.
