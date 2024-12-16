@@ -23,7 +23,7 @@ defmodule Bitmask do
         ]
       end
 
-    The generated bitmask can also optinally be used with ecto. It stores the flags in the DB as a bigint:
+    The generated bitmask can also optionally be used with ecto. It stores the flags in the database as a bigint:
       defmodule SomeEctoSchema do
         use Ecto.Schema
         schema "bitmasks" do
