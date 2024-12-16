@@ -162,9 +162,6 @@ defmodule Bitmask do
         unquote(ecto_code)
       end
 
-    # Macro.to_string(ast)
-    # |> IO.puts
-
     ast
   end
 
@@ -227,7 +224,6 @@ defmodule Bitmask do
   @doc since: "0.1.0"
   @callback has_flag(%{bitmask: integer(), flags: list(atom())} | integer(), atom()) :: boolean()
 
-  # Bitmask behaviour, for documentation
   @doc """
     Returns the a list of all the bitmasks flags
       iex> MyBitmask.get_all_values()
